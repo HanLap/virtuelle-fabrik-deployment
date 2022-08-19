@@ -1,0 +1,8 @@
+== Virtuelle Fabrik Deployment
+
+=== setup
+
+. Copy `env-template` to `.env` and fill.
+. Create `users` and put entries in the format `username:password`. The password has to be md5 or bcrypt hashed.
+. Create empty file `acme.json`
+. `acme.json` and `users` need access modifier `600`.

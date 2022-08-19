@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v2.8
+    command: 
+      -- --providers.docker
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./acme.json:/acme.json:rw
+      - ./users:/users:ro
+    labels:
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.rule=Host(`traefik.${HOSTNAME}`)
+      - traefik.http.routers.traefik.entrypoints=websecure
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.traefik.tls.certresolver=letsencrypt
+      - traefik.http.routers.traefik.middlewares=admin
+
+      - traefik.http.middlewares.admin.basicauth.usersFile=/users
+
+  latest:
+    image: gitlab-ext.exxcellent.de:4567/studentenprojekte/virtuelle-fabrik-frontend:latest
+    labels:
+      - traefik.http.routers.latest.rule=Host(`latest.${HOSTNAME}`) || Host(`${HOSTNAME}`)
+      - traefik.http.routers.latest.entrypoints=websecure
+      - traefik.http.routers.latest.tls=true
+      - traefik.http.routers.latest.tls.certresolver=letsencrypt
+
+  next:
+    image: gitlab-ext.exxcellent.de:4567/studentenprojekte/virtuelle-fabrik-frontend:next
+    labels:
+      - traefik.http.routers.next.rule=Host(`next.${HOSTNAME}`)
+      - traefik.http.routers.next.entrypoints=websecure
+      - traefik.http.routers.next.tls=true
+      - traefik.http.routers.next.tls.certresolver=letsencrypt
+
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /home/ubuntu/.docker/config.json:/config.json:ro
+    environment:
+      WATCHTOWER_POLL_INTERVAL: 300
+    
