@@ -19,14 +19,21 @@ services:
       - traefik.http.routers.traefik.entrypoints=websecure
       - traefik.http.routers.traefik.tls=true
       - traefik.http.routers.traefik.tls.certresolver=letsencrypt
-      - traefik.http.routers.traefik.middlewares=admin
 
+      - traefik.http.routers.traefik.middlewares=admin
       - traefik.http.middlewares.admin.basicauth.usersFile=/users
+  stable:
+    image: gitlab-ext.exxcellent.de:4567/studentenprojekte/virtuelle-fabrik-frontend:stable
+    labels:
+      - traefik.http.routers.stable.rule=Host(`stable.${HOSTNAME}`) || Host(`${HOSTNAME}`)
+      - traefik.http.routers.stable.entrypoints=websecure
+      - traefik.http.routers.stable.tls=true
+      - traefik.http.routers.stable.tls.certresolver=letsencrypt
 
   latest:
     image: gitlab-ext.exxcellent.de:4567/studentenprojekte/virtuelle-fabrik-frontend:latest
     labels:
-      - traefik.http.routers.latest.rule=Host(`latest.${HOSTNAME}`) || Host(`${HOSTNAME}`)
+      - traefik.http.routers.latest.rule=Host(`latest.${HOSTNAME}`)
       - traefik.http.routers.latest.entrypoints=websecure
       - traefik.http.routers.latest.tls=true
       - traefik.http.routers.latest.tls.certresolver=letsencrypt
