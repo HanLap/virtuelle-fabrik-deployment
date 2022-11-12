@@ -30,21 +30,47 @@ services:
       - traefik.http.routers.stable.tls=true
       - traefik.http.routers.stable.tls.certresolver=letsencrypt
 
-  latest:
-    image: gitlab-ext.exxcellent.de:4567/studentenprojekte/virtuelle-fabrik-frontend:latest
+  rc:
+    image: gitlab-ext.exxcellent.de:4567/studentenprojekte/virtuelle-fabrik-frontend/frontend:0.0.0-RC2
     labels:
-      - traefik.http.routers.latest.rule=Host(`latest.${HOSTNAME}`)
+      - traefik.http.routers.rc.rule=Host(`rc.${HOSTNAME}`) && !PathPrefix(`/api`)
+      - traefik.http.routers.rc.entrypoints=websecure
+      - traefik.http.routers.rc.tls=true
+      - traefik.http.routers.rc.tls.certresolver=letsencrypt
+
+  rc-backend:
+    image: gitlab-ext.exxcellent.de:4567/studentenprojekte/virtuelle-fabrik-frontend/mock-backend:0.0.0-RC2
+    volumes:
+      - "./work:/work:rw"
+    environment:
+      BACKEND_DATA_DIR: "/work"
+      BACKEND_PATH: "/api"
+    labels:
+      - traefik.http.routers.rc-backend.rule=Host(`rc.${HOSTNAME}`) && PathPrefix(`/api`)
+      - traefik.http.routers.rc-backend.entrypoints=websecure
+      - traefik.http.routers.rc-backend.tls=true
+      - traefik.http.routers.rc-backend.tls.certresolver=letsencrypt
+
+  latest:
+    image: gitlab-ext.exxcellent.de:4567/studentenprojekte/virtuelle-fabrik-frontend/frontend:latest
+    labels:
+      - traefik.http.routers.latest.rule=Host(`latest.${HOSTNAME}`) && !PathPrefix(`/api`)
       - traefik.http.routers.latest.entrypoints=websecure
       - traefik.http.routers.latest.tls=true
       - traefik.http.routers.latest.tls.certresolver=letsencrypt
 
-  next:
-    image: gitlab-ext.exxcellent.de:4567/studentenprojekte/virtuelle-fabrik-frontend:next
+  latest-backend:
+    image: gitlab-ext.exxcellent.de:4567/studentenprojekte/virtuelle-fabrik-frontend/mock-backend:latest
+    volumes:
+      - "./work:/work:rw"
+    environment:
+      BACKEND_DATA_DIR: "/work"
+      BACKEND_PATH: "/api"
     labels:
-      - traefik.http.routers.next.rule=Host(`next.${HOSTNAME}`)
-      - traefik.http.routers.next.entrypoints=websecure
-      - traefik.http.routers.next.tls=true
-      - traefik.http.routers.next.tls.certresolver=letsencrypt
+      - traefik.http.routers.latest-backend.rule=Host(`latest.${HOSTNAME}`) && PathPrefix(`/api`)
+      - traefik.http.routers.latest-backend.entrypoints=websecure
+      - traefik.http.routers.latest-backend.tls=true
+      - traefik.http.routers.latest-backend.tls.certresolver=letsencrypt
 
   watchtower:
     image: containrrr/watchtower
@@ -53,4 +79,3 @@ services:
       - /home/ubuntu/.docker/config.json:/config.json:ro
     environment:
       WATCHTOWER_POLL_INTERVAL: 300
-    
